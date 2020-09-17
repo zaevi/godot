@@ -1384,17 +1384,33 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, pieces.size(), Ref<Texture>());
 	return pieces[p_idx].texture;
 }
+
+Ref<Image> LargeTexture::get_data() const {
+
+	return to_image();
+}
+
 Ref<Image> LargeTexture::to_image() const {
 
 	Ref<Image> img = memnew(Image(this->get_width(), this->get_height(), false, Image::FORMAT_RGBA8));
 	for (int i = 0; i < pieces.size(); i++) {
 
-		Ref<Image> src_img = pieces[i].texture->get_data();
-		// TODO
-		if (!src_img.is_valid()) {
+		Ref<Image> src_img;
+		Rect2 rect;
+
+		Ref<AtlasTexture> atex = pieces[i].texture;
+		Ref<StreamTexture> stex = pieces[i].texture;
+
+		if (atex.is_valid()) {
+			src_img = atex->get_atlas()->get_data();
+			rect = atex->get_region();
+		} else if (stex.is_valid()) {
+			src_img = stex->get_data();
+			rect = Rect2(0, 0, stex->get_width(), stex->get_height());
+		} else {
 			continue;
 		}
-		img->blit_rect(src_img, Rect2(0, 0, src_img->get_width(), src_img->get_height()), pieces[i].offset);
+		img->blend_rect(src_img, rect, pieces[i].offset);
 	}
 
 	return img;
