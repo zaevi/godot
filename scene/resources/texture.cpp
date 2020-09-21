@@ -1368,6 +1368,33 @@ void LargeTexture::_set_data(const Array &p_array) {
 		add_piece(p_array[i], p_array[i + 1]);
 	}
 	size = Size2(p_array[p_array.size() - 1]);
+
+	if (merged && pieces.size() > 1) {
+		_merge();
+	}
+}
+
+void LargeTexture::_merge() {
+
+	Ref<Image> img = to_image();
+	Ref<ImageTexture> mtex = memnew(ImageTexture);
+	mtex->create_from_image(img);
+	pieces.clear();
+	add_piece(Point2i(), mtex);
+	print_line("merged");
+}
+
+bool LargeTexture::_get_merged() {
+
+	return merged;
+}
+
+void LargeTexture::_set_merged(bool merged) {
+
+	this->merged = merged;
+	if (merged && pieces.size() > 1) {
+		_merge();
+	}
 }
 
 int LargeTexture::get_piece_count() const {
@@ -1431,6 +1458,10 @@ void LargeTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_data", "data"), &LargeTexture::_set_data);
 	ClassDB::bind_method(D_METHOD("_get_data"), &LargeTexture::_get_data);
 
+	ClassDB::bind_method(D_METHOD("_set_merged", "merged"), &LargeTexture::_set_merged);
+	ClassDB::bind_method(D_METHOD("_get_merged"), &LargeTexture::_get_merged);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_merged", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_merged", "_get_merged");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
 }
 
@@ -1530,6 +1561,8 @@ bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
 }
 
 LargeTexture::LargeTexture() {
+
+	merged = false;
 }
 
 ///////////////////////////////////////////////

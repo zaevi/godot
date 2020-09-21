@@ -349,9 +349,14 @@ protected:
 
 	Vector<Piece> pieces;
 	Size2i size;
+	bool merged;
 
 	Array _get_data() const;
 	void _set_data(const Array &p_array);
+	bool _get_merged();
+	void _set_merged(bool merged);
+	void _merge();
+
 	static void _bind_methods();
 
 public:
@@ -375,6 +380,7 @@ public:
 	Vector2 get_piece_offset(int p_idx) const;
 	Ref<Texture> get_piece_texture(int p_idx) const;
 	Ref<Image> to_image() const;
+	void compress() const;
 
 	virtual Ref<Image> get_data() const;
 
