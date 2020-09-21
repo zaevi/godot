@@ -216,6 +216,7 @@ static Ref<ResourceFormatLoaderText> resource_loader_text;
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
 
 static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderMergedTexture> resource_loader_merged_texture;
 static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
 
 static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
@@ -236,6 +237,9 @@ void register_scene_types() {
 
 	resource_loader_stream_texture.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+
+	resource_loader_merged_texture.instance();
+	ResourceLoader::add_resource_format_loader(resource_loader_merged_texture);
 
 	resource_loader_texture_layered.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_texture_layered);
@@ -779,6 +783,9 @@ void unregister_scene_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_merged_texture);
+	resource_loader_merged_texture.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
 	resource_loader_stream_texture.unref();

@@ -35,6 +35,7 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
 #include "mesh.h"
+#include "resource_format_text.h"
 #include "scene/resources/bit_map.h"
 #include "servers/camera/camera_feed.h"
 
@@ -1530,6 +1531,33 @@ bool LargeTexture::is_pixel_opaque(int p_x, int p_y) const {
 }
 
 LargeTexture::LargeTexture() {
+}
+
+RES ResourceFormatLoaderMergedTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+
+	Ref<LargeTexture> ltex = ResourceFormatLoaderText::singleton->load(p_path);
+	Ref<Image> img = ltex->to_image();
+	Ref<ImageTexture> mtex = memnew(ImageTexture);
+	mtex->create_from_image(img);
+	if (r_error)
+		*r_error = OK;
+	return mtex;
+}
+
+void ResourceFormatLoaderMergedTexture::get_recognized_extensions(List<String> *p_extensions) const {
+
+	p_extensions->push_back("mtex");
+}
+
+bool ResourceFormatLoaderMergedTexture::handles_type(const String &p_type) const {
+	return p_type == "ImageTexture";
+}
+
+String ResourceFormatLoaderMergedTexture::get_resource_type(const String &p_path) const {
+
+	if (p_path.get_extension().to_lower() == "mtex")
+		return "ImageTexture";
+	return "";
 }
 
 ///////////////////////////////////////////////
