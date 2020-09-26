@@ -1539,6 +1539,8 @@ RES ResourceFormatLoaderMergedTexture::load(const String &p_path, const String &
 	Ref<Image> img = ltex->to_image();
 	Ref<ImageTexture> mtex = memnew(ImageTexture);
 	mtex->create_from_image(img);
+	mtex->set_path(p_path);
+
 	if (r_error)
 		*r_error = OK;
 	return mtex;
