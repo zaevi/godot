@@ -616,6 +616,8 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	// Attempt first to load the text-based project.godot file
 	Error err_text = _load_settings_text(p_text_path);
 	if (err_text == OK) {
+		String user_path = p_text_path.replace("project.godot", "project.user.godot");
+		_load_settings_text(user_path);
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
@@ -874,9 +876,17 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		custom_features += f;
 	}
 
-	if (p_path.ends_with(".godot"))
+	if (p_path.ends_with(".godot")) {
+
+		if (props.has("editor_plugins")) {
+			Map<String, List<String> > props_user;
+			props_user["editor_plugins"].push_back("enabled");
+			_save_settings_text(p_path.replace("project.godot", "project.user.godot"), props_user);
+			props.erase("editor_plugins");
+		}
+
 		return _save_settings_text(p_path, props, p_custom, custom_features);
-	else if (p_path.ends_with(".binary"))
+	} else if (p_path.ends_with(".binary"))
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
 	else {
 
