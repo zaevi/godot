@@ -3952,8 +3952,6 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		if (icon.is_null()) {
 			icon = gui_base->get_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
 		}
-
-		return icon;
 	}
 
 	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
@@ -5268,7 +5266,6 @@ void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
 
 	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Vector<String> just_copy = String("ttf,otf").split(",");
 
 	for (int i = 0; i < p_files.size(); i++) {
 
@@ -5301,9 +5298,6 @@ void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, Str
 			continue;
 		}
 
-		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) == -1)) {
-			continue;
-		}
 		dir->copy(from, to);
 	}
 }

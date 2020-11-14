@@ -602,7 +602,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		zipfi.tmz_date.tm_hour = time.hour;
 		zipfi.tmz_date.tm_mday = date.day;
 		zipfi.tmz_date.tm_min = time.min;
-		zipfi.tmz_date.tm_mon = date.month;
+		zipfi.tmz_date.tm_mon = date.month - 1; // tm_mon is zero indexed
 		zipfi.tmz_date.tm_sec = time.sec;
 		zipfi.tmz_date.tm_year = date.year;
 		zipfi.dosDate = 0;
@@ -837,7 +837,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		int version_code = p_preset->get("version/code");
 		String package_name = p_preset->get("package/unique_name");
 
-		int orientation = p_preset->get("screen/orientation");
+		const int screen_orientation = _get_android_orientation_value(_get_screen_orientation());
 
 		bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
 						 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
@@ -955,7 +955,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 						if (tname == "activity" && attrname == "screenOrientation") {
 
-							encode_uint32(orientation == 0 ? 0 : 1, &p_manifest.write[iofs + 16]);
+							encode_uint32(screen_orientation, &p_manifest.write[iofs + 16]);
 						}
 
 						if (tname == "supports-screens") {
@@ -1673,7 +1673,6 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "screen/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
@@ -2658,15 +2657,18 @@ public:
 
 		if (use_custom_build) {
 			//test that installed build version is alright
-			FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
-			if (!f) {
-				EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
-				return ERR_UNCONFIGURED;
-			}
-			String version = f->get_line().strip_edges();
-			if (version != VERSION_FULL_CONFIG) {
-				EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
-				return ERR_UNCONFIGURED;
+			{
+				FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
+				if (!f) {
+					EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
+					return ERR_UNCONFIGURED;
+				}
+				String version = f->get_line().strip_edges();
+				f->close();
+				if (version != VERSION_FULL_CONFIG) {
+					EditorNode::get_singleton()->show_warning(vformat(TTR("Android build version mismatch:\n   Template installed: %s\n   Godot Version: %s\nPlease reinstall Android build template from 'Project' menu."), version, VERSION_FULL_CONFIG));
+					return ERR_UNCONFIGURED;
+				}
 			}
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
 			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");

@@ -100,6 +100,10 @@ void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
+	if (connection == p_connection) {
+		return;
+	}
+
 	close();
 	connection = p_connection;
 	status = STATUS_CONNECTED;
@@ -745,7 +749,8 @@ HTTPClient::HTTPClient() {
 	ssl = false;
 	blocking = false;
 	handshaking = false;
-	read_chunk_size = 4096;
+	// 64 KiB by default (favors fast download speeds at the cost of memory usage).
+	read_chunk_size = 65536;
 }
 
 HTTPClient::~HTTPClient() {
